@@ -43,7 +43,7 @@
   /* ---- Top bar ---- */
   #topbar{
     display:flex;align-items:center;justify-content:space-around;
-    padding:calc(10px + var(--safe-top)) 6px 10px;
+    padding:calc(10px + var(--safe-top)) 6px 16px;
     background:linear-gradient(#000 60%,transparent);
     position:relative;z-index:5;
   }
@@ -57,7 +57,8 @@
   .icon-btn.active svg{stroke:var(--amber);}
   .icon-btn .dot{position:absolute;top:4px;right:4px;width:7px;height:7px;background:var(--amber);border-radius:50%;display:none;}
   .icon-btn.on .dot{display:block;}
-  .icon-label{position:absolute;bottom:-13px;font-size:9px;color:var(--muted);white-space:nowrap;}
+  .icon-label{position:absolute;bottom:-12px;left:50%;transform:translateX(-50%);font-size:8px;font-weight:700;letter-spacing:.3px;color:var(--muted);white-space:nowrap;}
+  .icon-btn.active .icon-label{color:var(--amber);}
 
   /* ---- Camera stage ---- */
   #stage{position:relative;flex:1;min-height:0;background:#000;overflow:hidden;}
@@ -255,9 +256,9 @@
       <svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M9 3v18M15 3v18M3 9h18M3 15h18"/></svg>
       <span class="dot"></span>
     </button>
-    <button class="icon-btn" id="btnFlash" title="Flash">
+    <button class="icon-btn" id="btnFlash" title="Flash: Off">
       <svg viewBox="0 0 24 24"><path d="M13 2 4 14h6l-1 8 9-12h-6l1-8z"/></svg>
-      <span class="dot"></span>
+      <span class="icon-label" id="flashModeLabel">OFF</span>
     </button>
     <button class="icon-btn" id="btnSaveLoc" title="Save this location">
       <svg viewBox="0 0 24 24"><path d="M14 3v4a1 1 0 0 0 1 1h4"/><path d="M17 21H7a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h7l5 5v11a2 2 0 0 1-2 2z"/><path d="M12 12v6M9 15h6"/></svg>
@@ -335,6 +336,20 @@
   <p style="font-size:11.5px;color:#6f7679;max-width:300px;">On iPhone: open this page in Safari, tap the Share icon, then choose "Add to Home Screen".</p>
 </div>
 
+<!-- ADMIN LOCK SHEET (shown instead of Settings when a password is set) -->
+<div class="sheet-backdrop" id="sheetAdminLock">
+  <div class="sheet">
+    <div class="grabber"></div>
+    <h2>Admin Access Required <button class="close" data-close>✕</button></h2>
+    <p style="font-size:12.5px;color:var(--muted);margin:0 0 12px;">Settings on this device are locked. Enter the admin password to continue.</p>
+    <div class="field">
+      <input type="password" id="adminLockInput" placeholder="Admin password" autocomplete="off">
+    </div>
+    <div id="adminLockError" style="color:var(--danger);font-size:12px;margin-bottom:8px;"></div>
+    <button class="btn primary" id="btnAdminUnlock">Unlock</button>
+  </div>
+</div>
+
 <!-- SETTINGS SHEET -->
 <div class="sheet-backdrop" id="sheetSettings">
   <div class="sheet">
@@ -347,6 +362,36 @@
         <button class="btn primary" id="btnInstallAppSettings" style="margin-top:0;width:auto;padding:8px 14px;">Install</button>
       </div>
     </div>
+    <div class="field">
+      <div class="optcard">
+        <div>Fullscreen (hide status bar)<small>Hides the clock/battery bar for an unobstructed view</small></div>
+        <button class="toggle" id="toggleFullscreen"><span class="knob"></span></button>
+      </div>
+    </div>
+    <hr style="border-color:var(--line);margin:16px 0;">
+
+    <div class="field">
+      <label>Admin Lock</label>
+      <p style="font-size:11px;color:var(--muted);margin:0 0 10px;">Protects Settings on <strong>this device</strong> with a password, so only an admin can change them. This is a local, per-device lock — it does not connect devices to each other, since the app runs entirely in the browser with no central server. There is no way for one device to remotely view, manage, or block another device without adding a real backend server; ask if you'd like to explore building one.</p>
+      <div id="adminLockSetup">
+        <div class="row2">
+          <input type="password" id="newAdminPassword" placeholder="New admin password">
+          <input type="password" id="confirmAdminPassword" placeholder="Confirm password">
+        </div>
+        <button class="btn primary" id="btnSetAdminPassword">Enable Admin Lock</button>
+      </div>
+      <div id="adminLockActive" class="hidden">
+        <div class="optcard">
+          <div>Admin lock is ON<small>Settings on this device require the password</small></div>
+        </div>
+        <div class="row2" style="margin-top:8px;">
+          <button class="btn ghost" id="btnChangeAdminPassword" style="margin-top:0;">Change password</button>
+          <button class="btn danger" id="btnDisableAdminLock" style="margin-top:0;">Disable lock</button>
+        </div>
+      </div>
+    </div>
+    <hr style="border-color:var(--line);margin:16px 0;">
+
     <div class="field">
       <label>App / Offline Status</label>
       <div id="pwaStatusList" style="font-size:12px;color:var(--muted);display:flex;flex-direction:column;gap:5px;background:var(--panel-2);border:1px solid var(--line);border-radius:10px;padding:10px 12px;"></div>
@@ -601,6 +646,7 @@ const state = {
   stream:null,
   torchOn:false,
   torchSupported:false,
+  flashMode:'off', // off | auto | on
   gridOn:false,
   wmVisible:true,
   wmTemplate:'default', // default | compact | minimal
@@ -635,9 +681,89 @@ async function loadSettings(){
   }
 }
 async function saveSettings(){
-  const {wmTemplate,unit,dateFormat,customTitle,soundOn,gridOn,facingMode,logoEnabled,logoOpacity} = state;
-  await idbPut('kv',{key:'settings',value:{wmTemplate,unit,dateFormat,customTitle,soundOn,gridOn,facingMode,logoEnabled,logoOpacity}});
+  const {wmTemplate,unit,dateFormat,customTitle,soundOn,gridOn,facingMode,logoEnabled,logoOpacity,flashMode} = state;
+  await idbPut('kv',{key:'settings',value:{wmTemplate,unit,dateFormat,customTitle,soundOn,gridOn,facingMode,logoEnabled,logoOpacity,flashMode}});
 }
+
+/* ================= Admin lock (local, per-device password on Settings) =================
+   Note: this only guards Settings in THIS browser. There is no server behind this app,
+   so it cannot see, manage, or block any other device — that would require a real backend. */
+let sessionUnlocked = false;
+async function sha256Hex(text){
+  const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(text));
+  return Array.from(new Uint8Array(buf)).map(b=>b.toString(16).padStart(2,'0')).join('');
+}
+async function getAdminHash(){
+  const rec = await idbGet('kv','adminPasswordHash').catch(()=>null);
+  return rec ? rec.value : null;
+}
+async function openSettingsGated(){
+  const hash = await getAdminHash();
+  if(hash && !sessionUnlocked){
+    document.getElementById('adminLockInput').value='';
+    document.getElementById('adminLockError').textContent='';
+    openSheet('sheetAdminLock');
+    return;
+  }
+  await enterSettings();
+}
+async function enterSettings(){
+  openSheet('sheetSettings');
+  await refreshAdminLockUI();
+  runPwaStatusCheck();
+  updateInstallUI();
+}
+async function refreshAdminLockUI(){
+  const hash = await getAdminHash();
+  document.getElementById('adminLockSetup').classList.toggle('hidden', !!hash);
+  document.getElementById('adminLockActive').classList.toggle('hidden', !hash);
+}
+document.getElementById('btnAdminUnlock').addEventListener('click', async ()=>{
+  const pass = document.getElementById('adminLockInput').value;
+  const hash = await getAdminHash();
+  if(await sha256Hex(pass) === hash){
+    sessionUnlocked = true;
+    closeSheets();
+    await enterSettings();
+  } else {
+    document.getElementById('adminLockError').textContent = 'Incorrect password. Try again.';
+  }
+});
+document.getElementById('adminLockInput').addEventListener('keydown', (e)=>{
+  if(e.key==='Enter') document.getElementById('btnAdminUnlock').click();
+});
+document.getElementById('btnSetAdminPassword').addEventListener('click', async ()=>{
+  const p1 = document.getElementById('newAdminPassword').value;
+  const p2 = document.getElementById('confirmAdminPassword').value;
+  if(p1.length<4){ toast('Password must be at least 4 characters'); return; }
+  if(p1!==p2){ toast('Passwords do not match'); return; }
+  await idbPut('kv',{key:'adminPasswordHash', value: await sha256Hex(p1)});
+  sessionUnlocked = true;
+  document.getElementById('newAdminPassword').value='';
+  document.getElementById('confirmAdminPassword').value='';
+  await refreshAdminLockUI();
+  toast('Admin lock enabled ✓');
+});
+document.getElementById('btnChangeAdminPassword').addEventListener('click', async ()=>{
+  const current = prompt('Enter the current admin password:');
+  if(current===null) return;
+  const hash = await getAdminHash();
+  if(await sha256Hex(current) !== hash){ toast('Incorrect current password'); return; }
+  const next = prompt('Enter a new admin password (at least 4 characters):');
+  if(next===null) return;
+  if(next.length<4){ toast('Password must be at least 4 characters'); return; }
+  await idbPut('kv',{key:'adminPasswordHash', value: await sha256Hex(next)});
+  toast('Password updated ✓');
+});
+document.getElementById('btnDisableAdminLock').addEventListener('click', async ()=>{
+  const current = prompt('Enter the current admin password to disable the lock:');
+  if(current===null) return;
+  const hash = await getAdminHash();
+  if(await sha256Hex(current) !== hash){ toast('Incorrect password'); return; }
+  await idbDelete('kv','adminPasswordHash');
+  await refreshAdminLockUI();
+  toast('Admin lock disabled');
+});
 
 /* ================= Company logo ================= */
 async function setLogoFromBlob(blob, persist){
@@ -717,7 +843,7 @@ async function startCamera(facingMode){
     const track = stream.getVideoTracks()[0];
     const caps = track.getCapabilities ? track.getCapabilities() : {};
     state.torchSupported = !!(caps && caps.torch);
-    document.getElementById('btnFlash').style.opacity = state.torchSupported? '1':'.35';
+    updateFlashUI();
   }catch(err){
     toast('Could not start camera: '+err.message);
   }
@@ -728,14 +854,54 @@ function stopCamera(){
     state.stream=null;
   }
 }
-async function toggleTorch(){
-  if(!state.stream || !state.torchSupported){ toast('Flash/torch is not supported on this device'); return; }
+async function setTorch(on){
+  if(!state.stream || !state.torchSupported) return false;
   const track = state.stream.getVideoTracks()[0];
-  state.torchOn = !state.torchOn;
   try{
-    await track.applyConstraints({advanced:[{torch:state.torchOn}]});
-    document.getElementById('btnFlash').classList.toggle('on', state.torchOn);
-  }catch(e){ toast('Could not turn on flash'); state.torchOn=false; }
+    await track.applyConstraints({advanced:[{torch:!!on}]});
+    state.torchOn = !!on;
+    return true;
+  }catch(e){ return false; }
+}
+function cycleFlashMode(){
+  const order = ['off','auto','on'];
+  const next = order[(order.indexOf(state.flashMode)+1) % order.length];
+  state.flashMode = next;
+  updateFlashUI();
+  saveSettings();
+  // Flash mode only affects capture/recording — never leave the torch lit in idle preview.
+  if(state.torchOn) setTorch(false);
+}
+function updateFlashUI(){
+  const btn = document.getElementById('btnFlash');
+  const label = document.getElementById('flashModeLabel');
+  label.textContent = state.flashMode.toUpperCase();
+  btn.classList.toggle('active', state.flashMode!=='off');
+  btn.title = 'Flash: ' + (state.flashMode==='off'?'Off':state.flashMode==='auto'?'Auto':'On');
+  btn.style.opacity = state.torchSupported? '1':'.35';
+}
+/* Samples the current video frame at low resolution to estimate ambient brightness (0-255). */
+const brightnessCanvas = document.createElement('canvas');
+brightnessCanvas.width = 16; brightnessCanvas.height = 16;
+function estimateBrightness(){
+  if(!video.videoWidth) return 255;
+  const ctx = brightnessCanvas.getContext('2d');
+  ctx.drawImage(video, 0, 0, 16, 16);
+  const data = ctx.getImageData(0,0,16,16).data;
+  let sum=0;
+  for(let i=0;i<data.length;i+=4){ sum += (data[i]*0.299 + data[i+1]*0.587 + data[i+2]*0.114); }
+  return sum / (data.length/4);
+}
+const LOW_LIGHT_THRESHOLD = 80;
+function shouldFireFlashForPhoto(){
+  if(state.flashMode==='off') return false;
+  if(state.flashMode==='on') return true;
+  return estimateBrightness() < LOW_LIGHT_THRESHOLD; // auto
+}
+function shouldFireFlashForVideo(){
+  if(state.flashMode==='off') return false;
+  if(state.flashMode==='on') return true;
+  return estimateBrightness() < LOW_LIGHT_THRESHOLD; // auto
 }
 async function switchCamera(){
   state.facingMode = state.facingMode==='environment' ? 'user' : 'environment';
@@ -1055,6 +1221,11 @@ function wrapText(ctx,text,maxW,maxLines){
 const workCanvas = document.getElementById('workCanvas');
 async function capturePhoto(){
   if(!state.lastPos && !state.manualLocation){ toast('Please wait, locating…'); }
+  let torchFired = false;
+  if(state.torchSupported && shouldFireFlashForPhoto()){
+    torchFired = await setTorch(true);
+    if(torchFired) await new Promise(r=>setTimeout(r,220)); // brief pre-flash so exposure adjusts, like a real flash
+  }
   flick();
   playShutterSound();
   const vw = video.videoWidth || 1080, vh = video.videoHeight || 1920;
@@ -1067,6 +1238,7 @@ async function capturePhoto(){
   } else {
     ctx.drawImage(video,0,0,vw,vh);
   }
+  if(torchFired){ setTorch(false); } // photo flash is a brief pulse, not left on
   if(state.wmVisible){ await drawWatermarkOnCanvas(ctx, vw, vh); }
   drawLogoOnCanvas(ctx, vw, vh);
   const blob = await new Promise(res=>workCanvas.toBlob(res,'image/jpeg',0.92));
@@ -1124,6 +1296,7 @@ async function startVideoRecording(){
     recordLoopId = requestAnimationFrame(draw);
   };
   draw();
+  if(state.torchSupported && shouldFireFlashForVideo()){ await setTorch(true); } // stays on for the whole recording
   const canvasStream = workCanvas.captureStream(30);
   let mixedStream = canvasStream;
   if(state.stream && state.stream.getAudioTracks().length){
@@ -1157,6 +1330,7 @@ function stopVideoRecording(){
     state.mediaRecorder.stop();
     state.recording=false;
     document.getElementById('shutter').classList.remove('recording');
+    if(state.torchOn) setTorch(false);
   }
 }
 
@@ -1188,7 +1362,10 @@ document.getElementById('btnGrid').addEventListener('click', (e)=>{
   e.currentTarget.classList.toggle('on', state.gridOn);
   saveSettings();
 });
-document.getElementById('btnFlash').addEventListener('click', toggleTorch);
+document.getElementById('btnFlash').addEventListener('click', ()=>{
+  if(!state.torchSupported){ toast('Flash/torch is not supported on this device'); return; }
+  cycleFlashMode();
+});
 document.getElementById('btnSaveLoc').addEventListener('click', async ()=>{
   const pos = state.manualLocation || state.lastPos;
   if(!pos){ toast('Location not available yet'); return; }
@@ -1203,7 +1380,7 @@ document.getElementById('btnWmToggle').addEventListener('click',(e)=>{
   e.currentTarget.classList.toggle('on', !state.wmVisible);
 });
 document.getElementById('btnSwitchCam').addEventListener('click', switchCamera);
-document.getElementById('btnSettings').addEventListener('click', ()=>openSheet('sheetSettings'));
+document.getElementById('btnSettings').addEventListener('click', ()=>openSettingsGated());
 document.getElementById('navLocations').addEventListener('click', async ()=>{ openSheet('sheetLocations'); await renderSavedLocations(); });
 document.getElementById('navTemplates').addEventListener('click', ()=>openSheet('sheetTemplates'));
 document.getElementById('navTemplateDefault').addEventListener('click', ()=>{
@@ -1540,6 +1717,7 @@ async function boot(){
   document.getElementById('toggleSound').classList.toggle('on', state.soundOn);
   document.getElementById('grid').classList.toggle('show', state.gridOn);
   document.getElementById('btnGrid').classList.toggle('on', state.gridOn);
+  updateFlashUI();
   renderTemplateOptions();
   setTemplate(state.wmTemplate);
   refreshPreviewThumb();
@@ -1555,9 +1733,38 @@ document.getElementById('btnGrantPerm').addEventListener('click', async ()=>{
     await startCamera(state.facingMode);
     startGeoWatch();
     document.getElementById('permGate').style.display='none';
+    tryEnterFullscreen(); // hides the phone status bar; must run inside this user tap
   }catch(e){
     errEl.textContent = 'Permission was not granted. Please enable camera and location access in your browser settings.';
   }
+});
+
+/* ================= Fullscreen (hides the phone's status bar) ================= */
+function isFullscreenActive(){
+  return !!(document.fullscreenElement || document.webkitFullscreenElement);
+}
+async function tryEnterFullscreen(){
+  const el = document.documentElement;
+  try{
+    if(el.requestFullscreen) await el.requestFullscreen();
+    else if(el.webkitRequestFullscreen) await el.webkitRequestFullscreen();
+  }catch(e){ /* some browsers block this; the toggle in Settings lets the user retry */ }
+  updateFullscreenToggleUI();
+}
+async function exitFullscreenMode(){
+  try{
+    if(document.exitFullscreen) await document.exitFullscreen();
+    else if(document.webkitExitFullscreen) await document.webkitExitFullscreen();
+  }catch(e){}
+  updateFullscreenToggleUI();
+}
+function updateFullscreenToggleUI(){
+  const t = document.getElementById('toggleFullscreen');
+  if(t) t.classList.toggle('on', isFullscreenActive());
+}
+document.addEventListener('fullscreenchange', updateFullscreenToggleUI);
+document.getElementById('toggleFullscreen').addEventListener('click', ()=>{
+  if(isFullscreenActive()) exitFullscreenMode(); else tryEnterFullscreen();
 });
 
 window.addEventListener('beforeunload', stopCamera);
@@ -1661,7 +1868,7 @@ async function runPwaStatusCheck(){
   }
 }
 document.getElementById('btnRecheckStatus').addEventListener('click', runPwaStatusCheck);
-document.getElementById('btnSettings').addEventListener('click', ()=>{ runPwaStatusCheck(); updateInstallUI(); });
+/* (status refresh now happens inside openSettingsGated / unlock flow) */
 
 })();
 </script>

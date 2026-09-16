@@ -4,7 +4,7 @@
    (see the "offline map download" feature in Settings) — this worker just
    makes sure it's also opportunistically cached for repeat visits.
 */
-const CACHE_NAME = 'gpsmapcamera-shell-v3';
+const CACHE_NAME = 'gpsmapcamera-shell-v4';
 const APP_SHELL = [
   './',
   './index.html',

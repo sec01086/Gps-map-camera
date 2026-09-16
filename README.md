@@ -46,6 +46,22 @@ Opening it from the home screen afterwards launches it full-screen, without the 
 - In **Settings → Company Logo**, upload a PNG file, turn "Show logo" on, and set the opacity (100% / 50% / 30% presets, or drag the slider for any value).
 - The logo appears in the top-right corner of the live camera view and is burned into every saved photo and video.
 
+## Fullscreen mode (hides the phone's status bar)
+- Fullscreen is requested automatically the first time you grant camera/location permission.
+- If it doesn't engage (some browsers block auto-fullscreen), turn it on anytime from **Settings → Fullscreen**.
+- This only works while you're actively using the page — exiting the app or navigating away exits fullscreen, and you may need to tap the toggle again next time. This is a browser limitation, not a bug in the app.
+
+## Flash modes (Off / Auto / On)
+Tap the flash icon at the top to cycle through three modes, like a normal camera:
+- **OFF** — flash never fires.
+- **AUTO** — the app checks how dark the scene looks right before capture and only fires the flash if it's genuinely dim.
+- **ON** — for photos, the flash fires as a brief pulse right at the moment of capture (not left on during preview). For video, it switches on for the entire recording and turns off automatically when you stop.
+Flash/torch control only works on devices and browsers that expose it (mainly the rear camera in Chrome on Android) — if it's not supported, the icon will look dimmed and tapping it will tell you so.
+
+## Admin Lock (Settings password)
+- In **Settings → Admin Lock**, set a password to require it before Settings can be opened on that device.
+- This protects Settings **on that one browser/device only** — it is a local lock, not an account system. The app has no server, so there's no way for an admin to see, manage, or remotely block other people's devices from here. If you need real multi-device management (e.g., a dashboard that lists every device and can disable specific ones), that requires building an actual backend service — let me know if you'd like help planning one.
+
 ## Setting a location manually
 - Open **Location** at the bottom of the camera screen.
 - Paste a Google Maps link (e.g. copied with Maps' Share button), raw coordinates like `24.7136, 46.6753`, or just type a place name, then tap **Set**.
