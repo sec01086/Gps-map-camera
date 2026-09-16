@@ -8,7 +8,7 @@
 
 ## Step 2: Upload the files
 1. On the new repo page, click **"uploading an existing file"** (or Add file → Upload files).
-2. Drag and drop every file and folder from this package (`index.html`, `manifest.json`, `service-worker.js`, `favicon.png`, and the whole `icons` folder) — drag the entire `icons` folder in so the folder structure is kept.
+2. Drag and drop **every single file** from this package straight into the repo root — `index.html`, `manifest.json`, `service-worker.js`, `favicon.png`, `icon-192.png`, `icon-512.png`, `icon-512-maskable.png`, `apple-touch-icon.png`. All files sit flat in the same folder — there is no subfolder to worry about.
 3. Click **Commit changes** at the bottom.
 
 ## Step 3: Turn on GitHub Pages
@@ -54,11 +54,11 @@ Opening it from the home screen afterwards launches it full-screen, without the 
 - While a manual location is active, a yellow **"Manual location active"** banner appears on the camera screen — tap it anytime to jump back to your live GPS position. The same option is available as an **"Use Live GPS"** button inside the Location sheet.
 
 ## Troubleshooting: no install option / offline not working
-Open **Settings** inside the app — the **App / Offline Status** panel checks everything for you and shows exactly what's missing (✓ or ✗ per file), for example if an icon wasn't uploaded correctly. Fix any ✗ items by re-uploading that exact file to the same folder in your GitHub repo, matching the folder structure in this package.
+Open **Settings** inside the app — the **App / Offline Status** panel checks everything for you and shows exactly what's missing (✓ or ✗ per file), for example if an icon wasn't uploaded correctly. Fix any ✗ items by re-uploading that exact file to the root of your GitHub repo (same level as `index.html`).
 
 Common causes:
-- The `icons` folder wasn't uploaded as a folder (GitHub's drag-and-drop sometimes needs the folder dragged in directly, not its contents one by one).
-- Only `index.html` was re-uploaded after an update, without `manifest.json` / `service-worker.js` / `icons`.
+- Only `index.html` was re-uploaded after an update, without also re-uploading `manifest.json` / `service-worker.js` / the icon files.
+- A file was uploaded to the wrong place (e.g. inside a subfolder) — every file in this package belongs directly in the repo root, not in any subfolder.
 - The very first visit after updating files was itself offline — the app must load online at least once after any update before offline mode reflects the new version.
 - Old cached version in Chrome — open the site's info icon (🛈) next to the address bar → Site settings → **Clear & reset**, then reload.
 

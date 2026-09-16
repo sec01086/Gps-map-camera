@@ -4,16 +4,16 @@
    (see the "offline map download" feature in Settings) — this worker just
    makes sure it's also opportunistically cached for repeat visits.
 */
-const CACHE_NAME = 'gpsmapcamera-shell-v2';
+const CACHE_NAME = 'gpsmapcamera-shell-v3';
 const APP_SHELL = [
   './',
   './index.html',
   './manifest.json',
   './favicon.png',
-  './icons/icon-192.png',
-  './icons/icon-512.png',
-  './icons/icon-512-maskable.png',
-  './icons/apple-touch-icon.png'
+  './icon-192.png',
+  './icon-512.png',
+  './icon-512-maskable.png',
+  './apple-touch-icon.png'
 ];
 
 self.addEventListener('install', (event) => {

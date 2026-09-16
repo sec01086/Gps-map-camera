@@ -9,7 +9,7 @@
 <link rel="manifest" href="manifest.json">
 <meta name="theme-color" content="#0d0f10">
 <link rel="icon" href="favicon.png">
-<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -1624,9 +1624,9 @@ async function runPwaStatusCheck(){
 
   checks.push(['manifest.json', await checkUrl('manifest.json')]);
   checks.push(['service-worker.js', await checkUrl('service-worker.js')]);
-  checks.push(['icons/icon-192.png', await checkUrl('icons/icon-192.png')]);
-  checks.push(['icons/icon-512.png', await checkUrl('icons/icon-512.png')]);
-  checks.push(['icons/apple-touch-icon.png', await checkUrl('icons/apple-touch-icon.png')]);
+  checks.push(['icon-192.png', await checkUrl('icon-192.png')]);
+  checks.push(['icon-512.png', await checkUrl('icon-512.png')]);
+  checks.push(['apple-touch-icon.png', await checkUrl('apple-touch-icon.png')]);
   checks.push(['favicon.png', await checkUrl('favicon.png')]);
 
   let swState = 'Not registered';
