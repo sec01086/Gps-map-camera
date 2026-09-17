@@ -42,10 +42,6 @@ Opening it from the home screen afterwards launches it full-screen, without the 
 - To see the map while offline, use **Settings → Offline Map Download** inside the app to pre-download the area you need before you go.
 - GPS location needs the phone's location service turned on — that works without internet, but fetching the address and new map tiles needs a connection.
 
-## Company logo
-- In **Settings → Company Logo**, upload a PNG file, turn "Show logo" on, and set the opacity (100% / 50% / 30% presets, or drag the slider for any value).
-- The logo appears in the top-right corner of the live camera view and is burned into every saved photo and video.
-
 ## Fullscreen mode (hides the phone's status bar)
 - Fullscreen is requested automatically the first time you grant camera/location permission.
 - If it doesn't engage (some browsers block auto-fullscreen), turn it on anytime from **Settings → Fullscreen**.
@@ -58,9 +54,25 @@ Tap the flash icon at the top to cycle through three modes, like a normal camera
 - **ON** — for photos, the flash fires as a brief pulse right at the moment of capture (not left on during preview). For video, it switches on for the entire recording and turns off automatically when you stop.
 Flash/torch control only works on devices and browsers that expose it (mainly the rear camera in Chrome on Android) — if it's not supported, the icon will look dimmed and tapping it will tell you so.
 
-## Admin Lock (Settings password)
-- In **Settings → Admin Lock**, set a password to require it before Settings can be opened on that device.
-- This protects Settings **on that one browser/device only** — it is a local lock, not an account system. The app has no server, so there's no way for an admin to see, manage, or remotely block other people's devices from here. If you need real multi-device management (e.g., a dashboard that lists every device and can disable specific ones), that requires building an actual backend service — let me know if you'd like help planning one.
+## Zoom & photo/video size
+- Pinch with two fingers on the camera view to zoom, or tap the 1x/2x/3x pills on the right.
+- On phones whose browser exposes hardware camera zoom, that's used automatically; otherwise the app falls back to a digital zoom (crop + scale) that still matches in the saved photo/video.
+- **Settings → Photo / Video Size** lets you pick Max/1080p/720p/480p — lower sizes capture faster and take less storage.
+
+## Save to phone gallery
+- **Settings → "Save photos to phone gallery"**: when on, every capture is also downloaded automatically (in addition to being kept in the app's own Gallery). On most Android phones, files downloaded through Chrome are indexed into the Photos app automatically; on iPhone, downloaded files go to the Files app (Safari doesn't allow a webpage to save directly into the Camera Roll).
+
+## Gallery (formerly "Reports")
+- Tap **Select** in the Gallery to enter multi-select mode: tap thumbnails to check them, use **Select all**, then **Share** (opens the system share sheet with all chosen files, where supported) or **Download**/**Delete**.
+
+## Pro Settings (master company logo for every device)
+Regular users can only turn the configured logo on/off from **Settings → Company Logo**. The image itself is set once by whoever manages the deployment, through a hidden **Pro Settings** panel:
+1. In Settings, tap **Pro Settings** at the bottom — it opens what looks like an upsell screen.
+2. Enter the code `admin123` and tap **Purchase Pro** (this is just a lightweight lock so casual users don't stumble into it — it isn't a real purchase or a secure login).
+3. Upload a PNG and choose the default opacity, then tap **Generate updated app file** — this downloads a new `index.html` with the logo embedded directly in the file.
+4. Upload that generated `index.html` to GitHub, replacing the old one, and commit.
+
+This is the only way a logo can appear the same for everyone on a site with no backend server — it has to travel inside the file itself. There's no way to make one device silently update another device's copy; each redeploy is a manual step.
 
 ## Setting a location manually
 - Open **Location** at the bottom of the camera screen.
@@ -70,7 +82,12 @@ Flash/torch control only works on devices and browsers that expose it (mainly th
 - While a manual location is active, a yellow **"Manual location active"** banner appears on the camera screen — tap it anytime to jump back to your live GPS position. The same option is available as an **"Use Live GPS"** button inside the Location sheet.
 
 ## Troubleshooting: no install option / offline not working
-Open **Settings** inside the app — the **App / Offline Status** panel checks everything for you and shows exactly what's missing (✓ or ✗ per file), for example if an icon wasn't uploaded correctly. Fix any ✗ items by re-uploading that exact file to the root of your GitHub repo (same level as `index.html`).
+The in-app diagnostics panel has been removed to keep Settings simple, so check manually instead:
+1. Open these links directly in your phone's browser and confirm each loads (not a 404):
+   - `https://your-username.github.io/gps-map-camera/manifest.json`
+   - `https://your-username.github.io/gps-map-camera/service-worker.js`
+   - `https://your-username.github.io/gps-map-camera/icon-512.png`
+2. If any of them 404, that exact file is missing or misnamed in your GitHub repo root — re-upload it there (no subfolders).
 
 Common causes:
 - Only `index.html` was re-uploaded after an update, without also re-uploading `manifest.json` / `service-worker.js` / the icon files.
@@ -78,7 +95,7 @@ Common causes:
 - The very first visit after updating files was itself offline — the app must load online at least once after any update before offline mode reflects the new version.
 - Old cached version in Chrome — open the site's info icon (🛈) next to the address bar → Site settings → **Clear & reset**, then reload.
 
-After fixing files on GitHub, reload the page fully (not from the cached home-screen icon) at least once while online, then re-open **Settings → Re-check status** to confirm all items show ✓.
+After fixing files on GitHub, reload the page fully (not from the cached home-screen icon) at least once while online, then check the ⋮ menu for "Install app" again.
 
 ## Updating later
 If you make changes to the file later, go back to the GitHub repo, upload/edit that file again (especially `index.html`) and commit — the live link will update automatically within a minute or two.
