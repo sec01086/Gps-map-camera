@@ -65,14 +65,23 @@ Flash/torch control only works on devices and browsers that expose it (mainly th
 ## Gallery (formerly "Reports")
 - Tap **Select** in the Gallery to enter multi-select mode: tap thumbnails to check them, use **Select all**, then **Share** (opens the system share sheet with all chosen files, where supported) or **Download**/**Delete**.
 
-## Pro Settings (master company logo for every device)
-Regular users can only turn the configured logo on/off from **Settings → Company Logo**. The image itself is set once by whoever manages the deployment, through a hidden **Pro Settings** panel:
-1. In Settings, tap **Pro Settings** at the bottom — it opens what looks like an upsell screen.
-2. Enter the code `admin123` and tap **Purchase Pro** (this is just a lightweight lock so casual users don't stumble into it — it isn't a real purchase or a secure login).
-3. Upload a PNG and choose the default opacity, then tap **Generate updated app file** — this downloads a new `index.html` with the logo embedded directly in the file.
-4. Upload that generated `index.html` to GitHub, replacing the old one, and commit.
+## Company logo (Pro Settings)
+Regular users can only turn the logo on/off from **Settings → Company Logo**. Two ways to set the actual image:
 
-This is the only way a logo can appear the same for everyone on a site with no backend server — it has to travel inside the file itself. There's no way to make one device silently update another device's copy; each redeploy is a manual step.
+**Company-wide logo (shows on every device):**
+1. Rename your logo file to exactly `logo.png` and upload it to the same GitHub folder as `index.html` (repo root, no subfolder), then commit.
+2. That's it — no regenerating or re-uploading `index.html`. Every device picks up `logo.png` automatically the next time it loads the app.
+3. To change it later, just upload a new file also named `logo.png` to replace the old one on GitHub.
+
+**This device's own logo (overrides the GitHub one, only on this device/browser):**
+1. In Settings, tap **Pro Settings** at the bottom — it opens what looks like an upsell screen (this is intentional, see below).
+2. Enter the code `admin123` and tap **Purchase Pro**.
+3. Under "This device's logo override", upload a PNG — it saves instantly, no file to re-upload anywhere.
+4. "Remove override" switches this device back to whatever `logo.png` is on GitHub (if any).
+
+**Opacity** (default 70%, adjustable to 100/70/50/30% or any value via the slider) is always a per-device setting inside Pro Settings, and applies to whichever logo is currently showing — the GitHub one or this device's override.
+
+The `admin123` code is just a lightweight lock so casual users don't stumble into Pro Settings — it isn't a real purchase or a secure login, and it only controls what this one browser can see.
 
 ## Import & Stamp existing photos (in Pro Settings)
 Also inside **Pro Settings**: "Choose photos to stamp" lets you pick one or more photos already in your phone's gallery — not just ones taken with this app — and adds the same location/address/time stamp (and logo, if turned on) to them.
