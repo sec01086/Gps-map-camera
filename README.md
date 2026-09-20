@@ -74,6 +74,13 @@ Regular users can only turn the configured logo on/off from **Settings → Compa
 
 This is the only way a logo can appear the same for everyone on a site with no backend server — it has to travel inside the file itself. There's no way to make one device silently update another device's copy; each redeploy is a manual step.
 
+## Import & Stamp existing photos (in Pro Settings)
+Also inside **Pro Settings**: "Choose photos to stamp" lets you pick one or more photos already in your phone's gallery — not just ones taken with this app — and adds the same location/address/time stamp (and logo, if turned on) to them.
+- If a photo already has GPS location saved in it (true for most phone camera photos), that location and its original capture date are read automatically and used.
+- If not, you'll be asked to enter a location (paste a Google Maps link, coordinates, or an address) or use your current GPS position, or skip that photo.
+- Stamped copies are saved into this app's own Gallery (and downloaded too, if "Save to phone gallery" is on) — the original photo on your phone is never modified.
+- Works with JPEG and PNG. HEIC photos (the default format on iPhone) usually can't be read by the browser — export or share them as JPEG first, then import.
+
 ## Setting a location manually
 - Open **Location** at the bottom of the camera screen.
 - Paste a Google Maps link (e.g. copied with Maps' Share button), raw coordinates like `24.7136, 46.6753`, or just type a place name, then tap **Set**.
